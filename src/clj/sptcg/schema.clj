@@ -14,11 +14,50 @@
 
 ;; See http://docs.datomic.com/schema.html for more detailed information
 
-(defschema user
+(defschema player
   (fields
    [username :string :indexed]
    [pwd :string "Hashed password string"]
    [email :string :indexed]))
+
+(defschema game
+  (fields
+   [players :ref :many]
+   [winner :ref]
+   [size :long]))
+
+(defschema owner
+  (fields
+   [player :ref]
+   [game :ref]))
+
+(defschema position
+  (fields
+   [x :long]
+   [y :long]))
+
+(defschema deck
+  (fields
+   [title :string :indexed]))
+
+(defschema card
+  (fields
+   [title :string :indexed]
+   [deck :ref]))
+
+(defschema land
+  (fields
+   [title :string :indexed]))
+
+
+(comment
+  card
+  rules
+  creatures
+  land
+  player
+  enchantment)
+
 
 (defn schema []
   (concat
