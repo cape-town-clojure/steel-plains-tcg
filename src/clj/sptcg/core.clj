@@ -51,6 +51,10 @@
 (def server (atom nil))
 
 (defn -main [& args]
+  (println "Starting REPL")
   (nrepl/start-server :port 4005 :bind "127.0.0.1")
+  (println "Starting Datomic")
   (util/init-db dburi)
-  (reset! server (hk/run-server app {:port 8080})))
+  (println "Starting Http-kit")
+  (reset! server (hk/run-server app {:port 8080}))
+  (println "Started Server."))
