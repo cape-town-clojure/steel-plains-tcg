@@ -1,10 +1,9 @@
 (ns sptcg.util
   (:require [datomic.api :as d]
             [clojure.java.io :as io]
-            [clojure.edn :as edn])
+            [clojure.edn :as edn]
+            [sptcg.schema :as schema])
   (:import datomic.Util))
-
-(def uri "datomic:free://localhost:4334/sptcg")
 
 (defn read-all [f]
   (Util/readAll (io/reader f)))
@@ -14,19 +13,18 @@
     (d/transact conn txd))
   :done)
 
-(defn create-db []
+(defn create-db [uri]
   (d/create-database uri))
 
-(defn get-conn []
-  (d/connect uri))
+(defn load-schema [conn]
+  (d/transact conn (schema/schema)))
 
-(defn load-schema []
-  (transact-all (get-conn) (io/resource "data/schema.edn")))
+(defn load-data [conn]
+  (transact-all conn (io/resource "data/initial.edn")))
 
-(defn load-data []
-  (transact-all (get-conn) (io/resource "data/initial.edn")))
-
-(defn init-db []
-  (create-db)
-  (load-schema)
-  (load-data))
+(defn init-db [uri]
+  (create-db uri)
+  (let [conn (d/connect uri)]
+    (load-schema conn)
+    (load-data conn)
+    conn))
