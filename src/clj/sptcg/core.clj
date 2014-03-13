@@ -11,12 +11,8 @@
    [clojure.tools.nrepl.server :as nrepl]
    [sptcg.util :as util]))
 
-(defn index [req]
-  "hello"
-  ;;(file-response "public/html/index.html" {:root "resources"})
-  )
-
-
+(defn index [{db :db}]
+  (file-response "public/html/index.html" {:root "resources"}))
 
 (let [{:keys [ch-recv send-fn ajax-post-fn ajax-get-or-ws-handshake-fn]}
       (sente/make-channel-socket! {})]
@@ -51,10 +47,10 @@
 (def server (atom nil))
 
 (defn -main [& args]
-  (println "Starting REPL")
+  (println "Starting REPL at 127.0.0.1 port 4005")
   (nrepl/start-server :port 4005 :bind "127.0.0.1")
-  (println "Starting Datomic")
+  (println "Starting Datomic at " dburi)
   (util/init-db dburi)
-  (println "Starting Http-kit")
+  (println "Starting Http-kit http://localhost:8080")
   (reset! server (hk/run-server app {:port 8080}))
   (println "Started Server."))
