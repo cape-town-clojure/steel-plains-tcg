@@ -5,3 +5,5 @@ pom.xml
 /targets/
 .lein-deps-sum
 /target
+resources/public/js/out
+main.js
