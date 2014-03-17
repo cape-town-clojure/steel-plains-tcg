@@ -16,7 +16,7 @@
 
 (defschema player
   (fields
-   [username :string :indexed]
+   [name :string :indexed]
    [pwd :string "Hashed password string"]
    [email :string :indexed]))
 

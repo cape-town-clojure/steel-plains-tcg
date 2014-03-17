@@ -19,6 +19,7 @@
                  [com.taoensso/sente "0.8.2" :exclusions [org.clojure/clojurescript]]
                  [datomic-schema "1.0.2"]
                  [org.clojure/tools.nrepl "0.2.3" :exclusions [org.clojure/clojure]]
+                 [ring-anti-forgery "0.3.0"]
                  ;;[clojure-complete "0.2.3"]
                  [environ "0.4.0"]]
 
