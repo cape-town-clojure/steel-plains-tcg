@@ -8,7 +8,7 @@
    [ring.middleware.params :as params]
    [ring.middleware.anti-forgery :as ring-anti-forgery]
    [ring.middleware.session :as session]
-   [compojure.core :refer [defroutes GET POST]]
+   [compojure.core :refer [defroutes GET POST context]]
    [compojure.route :as route]
    [compojure.handler :as handler]
    [datomic.api :as d]
@@ -24,34 +24,14 @@
 (defn register [{db :db {:keys [name pwd email]} :params :as req}]
   (let [existing-player (first (d/q '[:find ?e :in $ ?email :where [?e :player/email ?email]] db email))
         player {:db/id (d/tempid :db.part/user) :player/name name :player/pwd pwd :player/email email}]
-    (if existing-player
-      {:body "Player already exists!"}
-      {:body (str email " registered.")
-       :dbtx [player]})))
-
-(let [{:keys [ch-recv send-fn ajax-post-fn ajax-get-or-ws-handshake-fn]}
-      (sente/make-channel-socket! {})]
-  (def ring-ajax-post                ajax-post-fn)
-  (def ring-ajax-get-or-ws-handshake ajax-get-or-ws-handshake-fn)
-  (def ch-chsk                       ch-recv)
-  (def chsk-send!                    send-fn))
-
-(defn- event-msg-handler
-  [{:as ev-msg :keys [ring-req event ?reply-fn]} _]
-  (let [session (:session ring-req)
-        uid     (:uid session)
-        [id data :as ev] event]
-    (?reply-fn {:app/login :done})))
-
-;; Will start a core.async go loop to handle `event-msg`s as they come in:
-(sente/start-chsk-router-loop! event-msg-handler ch-chsk)
-
-(defroutes routes
-  (GET "/" [] index)
-  (GET "/register" [] register)
-  (GET  "/chsk" [] #'ring-ajax-get-or-ws-handshake)
-  (POST "/chsk" [] #'ring-ajax-post)
-  (route/files "/" {:root "resources/public"}))
+    (cond
+     (nil? name) "Please supply your name"
+     (nil? pwd) "Please supply a password"
+     (nil? email) "Please supply your email address"
+     existing-player "Player already exists!"
+     :else
+     {:body (str email " registered.")
+      :dbtx [player]})))
 
 ;;(def dburi "datomic:free://localhost:4334/sptcg")
 (def dburi "datomic:mem://sptcg")
@@ -64,13 +44,64 @@
     (let [conn (d/connect dburi)
           db (d/db conn)
           response (handler (assoc req :db db))]
+      (println "Response at wrap-tx:" response)
       (if (:dbtx response)
         (d/transact conn (:dbtx response)))
       response)))
 
+(defmulti socket-event (fn [{event :event}] (first event)))
+
+(let [{:keys [ch-recv send-fn ajax-post-fn ajax-get-or-ws-handshake-fn]}
+      (sente/make-channel-socket! {})]
+  (def ring-ajax-post                ajax-post-fn)
+  (def ring-ajax-get-or-ws-handshake ajax-get-or-ws-handshake-fn)
+  (def ch-chsk                       ch-recv)
+  (def chsk-send!                    send-fn))
+
+(defn wrap-chsk-send [handler]
+  (fn [req]
+    (let [{:keys [websocket-send] :as response} (handler req)]
+      (doseq [[uid msg] websocket-send]
+        (chsk-send! uid msg))
+      response)))
+
+(def event-app
+  (->
+   (fn [r] (socket-event r))
+   wrap-chsk-send
+   wrap-tx))
+
+(defn event-msg-handler
+  [{:as ev-msg :keys [ring-req event ?reply-fn]} _]
+  (let [{:keys [websocket-response] :as response} (event-app (assoc ring-req :event event))]
+    (doseq [m websocket-response]
+      (?reply-fn m))
+    response))
+
+;; Will start a core.async go loop to handle `event-msg`s as they come in:
+(sente/start-chsk-router-loop! event-msg-handler ch-chsk)
+
+
+(defroutes txroutes
+  (GET "/register" [] register))
+
+(def txapp
+  (-> txroutes
+      wrap-chsk-send
+      wrap-tx))
+
+(defroutes routes
+  (GET "/" [] index)
+  (context "/tx" [] #'txapp)
+  (GET  "/chsk" [] #'ring-ajax-get-or-ws-handshake)
+  (POST "/chsk" [] #'ring-ajax-post)
+  (route/files "/" {:root "resources/public"}))
+
+
+
+
 (def app
   (-> routes
-      wrap-tx
       keyword-params/wrap-keyword-params
       nested-params/wrap-nested-params
       params/wrap-params

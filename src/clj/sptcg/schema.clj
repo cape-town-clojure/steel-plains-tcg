@@ -18,7 +18,7 @@
   (fields
    [name :string :indexed]
    [pwd :string "Hashed password string"]
-   [email :string :indexed]))
+   [email :string :indexed :unique-value]))
 
 (defschema game
   (fields
