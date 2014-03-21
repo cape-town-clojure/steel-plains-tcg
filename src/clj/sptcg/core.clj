@@ -53,6 +53,7 @@
 
 (defmethod socket-event :chsk/uidport-open [event] (println "> Socket open!"))
 (defmethod socket-event :chsk/state [event] (println "> Socket state!"))
+(defmethod socket-event :chsk/ping [event] (println "> Socket ping!"))
 
 (let [{:keys [ch-recv send-fn ajax-post-fn ajax-get-or-ws-handshake-fn]}
       (sente/make-channel-socket! {})]
