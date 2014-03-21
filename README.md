@@ -14,7 +14,12 @@ Join us on `#clojure.za` at `irc.freenode.net`!
 	- `lein cljsbuild auto`.
 	- `lein run`.
 
-You can now browse to `http://localhost:8080`, and you can modify any cljx/cljs file and have the changes appear when you refresh the browser.
+You can now browse to `http://localhost:8080`, and you can modify any
+cljx/cljs file and have the changes appear when you refresh the
+browser.
+
+You can press `ctrl-esc` to see a draggable debug window showing the
+state of the deck builder.P
 
 ## About the game
 
