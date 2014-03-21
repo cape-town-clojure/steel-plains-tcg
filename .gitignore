@@ -7,3 +7,4 @@ pom.xml
 /target
 resources/public/js/out
 main.js
+.nrepl-port
