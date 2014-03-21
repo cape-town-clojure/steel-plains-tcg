@@ -45,7 +45,7 @@
 (let [ch-chsk   ch-chsk ; Chsk events (incl. async events from server)
       ch-ui     (chan)  ; Channel for your own UI events, etc. (optional)
       ch-merged (async/merge [ch-chsk ch-ui])]
-  
+
   ;; Will start a core.async go loop to handle `event`s as they come in:
-  
-  (sente/start-chsk-router-loop! event-handler ch-merged)  )
+
+  (sente/start-chsk-router-loop! event-handler ch-merged))

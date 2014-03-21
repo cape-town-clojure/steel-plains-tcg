@@ -51,6 +51,9 @@
 
 (defmulti socket-event (fn [{event :event}] (first event)))
 
+(defmethod socket-event :chsk/uidport-open [event] (println "> Socket open!"))
+(defmethod socket-event :chsk/state [event] (println "> Socket state!"))
+
 (let [{:keys [ch-recv send-fn ajax-post-fn ajax-get-or-ws-handshake-fn]}
       (sente/make-channel-socket! {})]
   (def ring-ajax-post                ajax-post-fn)
