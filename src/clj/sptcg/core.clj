@@ -18,7 +18,7 @@
    [sptcg.util :as util]))
 
 (defn index [{db :db :as req}]
-  (assoc (file-response "public/html/index.html" {:root "resources"})
+  (assoc (file-response "public/index.html" {:root "resources"})
     :session (assoc (:session req) :uid (java.util.UUID/randomUUID))))
 
 (defn register [{db :db {:keys [name pwd email]} :params :as req}]
