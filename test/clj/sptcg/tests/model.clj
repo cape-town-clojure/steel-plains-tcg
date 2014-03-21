@@ -54,6 +54,24 @@
                       :cost [{:amount 1}
                              {:colour :green :amount 1}]})
 
+;; Cards
+
+(expect-schema Cards [{:name     "Plains"
+                       :size     1
+                       :type     :land
+                       :sub-type :plains}
+                      {:name     "Frozen Lake"
+                       :size     1
+                       :type     :land
+                       :sub-type "Lake"}{:name "Heal"
+                       :type :effect
+                       :cost [{:colour :white :amount 1}]}
+                      {:name "Grizzly Bear"
+                       :type :creature
+                       :sub-type "Bear"
+                       :cost [{:amount 1}
+                              {:colour :green :amount 1}]}])
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Decks
 

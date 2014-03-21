@@ -5,15 +5,16 @@
 
 (defn is? [v] (s/pred #(= v %)))
 
-(defn at-most [n] (partial >= n))
+(defn at-most [n] (s/pred (partial >= n)))
 
 (defn total-amount-at-least [n]
-  (fn [cards]
-    (->> cards
-         (map (fn [card]
-                (or (:amount card) 1)))
-         (apply +)
-         (<= n))))
+  (s/pred
+   (fn [deck-cards]
+     (->> deck-cards
+          (map (fn [deck-card]
+                 (or (:amount deck-card) 1)))
+          (apply +)
+          (<= n)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Cards
@@ -55,7 +56,7 @@
           :type (s/either SpellTypes #{SpellTypes})
           (s/optional-key :sub-type) s/Str}))
 
-(def Cards [(s/both Land Spell)])
+(def Cards [(s/either BasicLand NonBasicLand Spell)])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Decks
@@ -69,20 +70,21 @@
 (def NonBasicLandDeckCard
   {:card NonBasicLand
    :amount (s/both s/Num
-                   (s/pred (at-most 4)))})
+                   (at-most 4))})
 
 (def LandDeck
   {:type (is? :land)
-   :cards (s/both [(s/either BasicLandDeckCard NonBasicLandDeckCard)]
-                  (s/pred (total-amount-at-least 30)))})
+   :cards (s/both [(s/either BasicLandDeckCard
+                             NonBasicLandDeckCard)]
+                  (total-amount-at-least 30))})
 
 (def SpellDeckCard
   {:card Spell
    :amount (s/both s/Num
-                   (s/pred (at-most 3)))})
+                   (at-most 3))})
 
 (def SpellDeck
   {:type (is? :spell)
    :cards (s/both [SpellDeckCard]
-                  (s/pred (total-amount-at-least 40)))})
+                  (total-amount-at-least 40))})
 
