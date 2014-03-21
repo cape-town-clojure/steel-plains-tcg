@@ -1,9 +1,22 @@
-steel-plains-tcg
-================
+# Steel Plains
+==============
 
-The home for the trading card game we're building in the Cape Town Clojure User Group
+The home for the trading card game we're building in the Cape Town Clojure User Group.
 
-Join us on #clojure.za at irc.freenode.net 
+Join us on `#clojure.za` at `irc.freenode.net`!
+
+## Getting set up
+
+1. Clone this repo and `cd` into it.
+2. Run `mkdir -p target/generated`. You only need to do this once.
+3. In three different terminal windows, run:
+	- `lein cljx auto`.
+	- `lein cljsbuild auto`.
+	- `lein run`.
+
+You can now browse to `http://localhost:8080`, and you can modify any cljx/cljs file and have the changes appear when you refresh the browser.
+
+## About the game
 
 Steel Plains is part Deck Building Collectable Card Game, part strategy board game where players design and vote for up to X new cards to be cycled into the game very month. Up to Y cards can be cycled out of the game each month.
 
@@ -13,7 +26,7 @@ Overarching Gameplay Goals:
  - A players turn has to be entirely uninterruptible by other players so that games can be played asynchronously and over possibly longer periods of time.
  - Have enough definition in the factions of the game so that players can vote correctly on what cards suit which colours.
  - Hexagonal shared board where pieces get placed and played as time progresses
- 
+
 The setting is general, family friendly, light fantasy.
 
 Some specific plans:
@@ -25,7 +38,7 @@ Some specific plans:
 
  - Card removal cycle:
    - Every month, all cards currently in "print" are available to be voted out, the top Y voted out will be pushed into an area where they can be revoted and third-stage beta tested before possibly bringing it back into the game.
-   
+
  - Card printing cycles
    - Every card "printed" and handed to a player will have its edition stamped onto it so that it can increase in value over time
    - Still thinking about how to limit print cycles of cards otherwise.
@@ -92,7 +105,7 @@ Bases:
 Gold's function:
  - Gold is consumed by units on the board for various activated abilities.
  - Construct extra bases
- 
+
 
 ## License
 
