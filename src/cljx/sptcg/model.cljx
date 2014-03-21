@@ -3,30 +3,36 @@
   #+clj (:require [schema.macros :as sm])
   #+cljs (:require-macros [schema.macros :as sm]))
 
+(defn is? [v] (s/pred #(= v %)))
+
+(defn at-most [n] (partial >= n))
+
+(defn total-amount-at-least [n]
+  (fn [cards]
+    (->> cards
+         (map (fn [card]
+                (or (:amount card) 1)))
+         (apply +)
+         (<= n))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Cards
 
-(def Factions (s/enum :none :green :blue :red :white))
-
-(def Faction
-  {(s/optional-key :faction) (s/either Factions #{Factions})})
+(def Colours (s/enum :none :green :blue :red :white))
 
 (def Mana
-  (merge Faction {:amount s/Int}))
-
-(def CardTypes (s/enum :creature :structure :land :effect :enchantment :equipment))
+  {(s/optional-key :colour) (s/either Colours #{Colours})
+   :amount s/Int})
 
 (def Card
-  (merge Faction
-         {:name s/Str
-          :type (s/either CardTypes #{CardTypes})
-          (s/optional-key :sub-type) s/Str}))
+  {:name s/Str})
 
 (def LandSizes (s/enum 1 2 3 4 5))
 
 (def Land
   (merge Card
-         {:size LandSizes
+         {:type (is? :land)
+          :size LandSizes
           (s/optional-key :produces) (s/either Mana #{Mana})}))
 
 ;; haven't yet specified the speed and size of basic lands.
@@ -39,11 +45,15 @@
 
 (def NonBasicLand
   (merge Land
-         {:sub-type (s/pred (complement BasicLandTypes))}))
+         {(s/optional-key :sub-type) s/Str}))
+
+(def SpellTypes (s/enum :creature :structure :effect :enchantment :equipment))
 
 (def Spell
   (merge Card
-         {:cost [Mana]}))
+         {:cost [Mana]
+          :type (s/either SpellTypes #{SpellTypes})
+          (s/optional-key :sub-type) s/Str}))
 
 (def Cards [(s/both Land Spell)])
 
@@ -52,12 +62,6 @@
 
 (def DeckTypes (s/enum :land :spell))
 
-(def Deck
-  {:type DeckTypes})
-
-(defn count-at-least [n] (comp (partial < n) count))
-(defn count-at-most [n]  (comp (partial > n) count))
-
 (def BasicLandDeckCard
   {:card BasicLand
    :amount s/Num})
@@ -65,19 +69,20 @@
 (def NonBasicLandDeckCard
   {:card NonBasicLand
    :amount (s/both s/Num
-                   (s/pred (count-at-most 4)))})
+                   (s/pred (at-most 4)))})
+
+(def LandDeck
+  {:type (is? :land)
+   :cards (s/both [(s/either BasicLandDeckCard NonBasicLandDeckCard)]
+                  (s/pred (total-amount-at-least 30)))})
 
 (def SpellDeckCard
   {:card Spell
    :amount (s/both s/Num
-                   (s/pred (count-at-most 3)))})
-
-(def LandDeck
-  (merge Deck
-         {:cards (s/both [(s/either BasicLandDeckCard NonBasicLandDeckCard)]
-                         (s/pred (count-at-least 30)))}))
+                   (s/pred (at-most 3)))})
 
 (def SpellDeck
-  (merge Deck
-         {:cards (s/both [SpellDeckCard]
-                         (s/pred (count-at-least 40)))}))
+  {:type (is? :spell)
+   :cards (s/both [SpellDeckCard]
+                  (s/pred (total-amount-at-least 40)))})
+
