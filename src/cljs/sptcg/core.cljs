@@ -7,20 +7,13 @@
             [cljs.core.async :as async :refer (<! >! put! chan)]
             [om.core :as om :include-macros true]
             [om.dom :as dom :include-macros true]
-            [taoensso.sente :as sente :refer (cb-success?)])
+            [taoensso.sente :as sente :refer (cb-success?)]
+            [sptcg.deck-builder :as deck-builder])
   (:import [goog.net XhrIo]
            goog.net.EventType
            [goog.events EventType]))
 
 (enable-console-print!)
-
-(println "Hello world!")
-
-(let [{:keys [chsk ch-recv send-fn]}
-      (sente/make-channel-socket! "/chsk" {} {:type :auto})]
-  (def chsk       chsk)
-  (def ch-chsk    ch-recv)
-  (def chsk-send! send-fn))
 
 (defn- event-handler [[id data :as ev] _]
   (println "<!" id)
@@ -42,10 +35,18 @@
    [:chsk/recv  payload]   (logf "From server: %s"       payload)
    :else (logf "Unmatched <!: %s" id)))
 
-(let [ch-chsk   ch-chsk ; Chsk events (incl. async events from server)
+#_(let [{:keys [chsk ch-recv send-fn]}
+      (sente/make-channel-socket! "/chsk" {} {:type :auto})]
+  (def chsk       chsk)
+  (def ch-chsk    ch-recv)
+  (def chsk-send! send-fn))
+
+#_(let [ch-chsk   ch-chsk ; Chsk events (incl. async events from server)
       ch-ui     (chan)  ; Channel for your own UI events, etc. (optional)
       ch-merged (async/merge [ch-chsk ch-ui])]
 
   ;; Will start a core.async go loop to handle `event`s as they come in:
 
   (sente/start-chsk-router-loop! event-handler ch-merged))
+
+(deck-builder/start!)
