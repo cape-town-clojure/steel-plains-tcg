@@ -20,14 +20,14 @@
   (merge Faction
          {:name s/Str
           :type (s/either CardTypes #{CardTypes})
-          (s/optional-key :sub-type) s/Keyword}))
+          (s/optional-key :sub-type) s/Str}))
 
 (def LandSizes (s/enum 1 2 3 4 5))
 
 (def Land
   (merge Card
          {:size LandSizes
-          :produces (s/either Mana #{Mana})}))
+          (s/optional-key :produces) (s/either Mana #{Mana})}))
 
 ;; haven't yet specified the speed and size of basic lands.
 ;; not sure about their usage?

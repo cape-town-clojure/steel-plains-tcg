@@ -16,4 +16,24 @@
 ;;; Mana
 
 (expect-schema Mana {:amount 0})
+(expect-schema Mana {:faction :red :amount 5})
 
+;; Cards
+
+(expect-schema CardTypes :land)
+
+(expect-schema Card {:name "Heal" :type :effect})
+(expect-schema Card {:name "Grizzly Bear"
+                     :type :creature
+                     :faction :green
+                     :sub-type "Bear"})
+
+;; Lands
+
+(expect-schema Land {:name "Frozen Lake"
+                     :size 1
+                     :type :land})
+(expect-schema Land {:name "Frozen Lake"
+                     :size 1
+                     :type :land
+                     :produces {:faction :white :amount 1}})
