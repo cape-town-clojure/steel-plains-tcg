@@ -1,11 +1,12 @@
 (ns sptcg.deck-builder
   (:require-macros [cljs.core.async.macros :as asyncm :refer (go go-loop alt!)])
-  (:require [cljs.core.async :as async :refer (<! >! put! chan)]
+  (:require [cljs.core.async :as async :refer (<! >! put! chan mult)]
             [om.core :as om :include-macros true]
             [sablono.core :as html :refer-macros [html]]
             [sptcg.components.editor :as editor]
             [sptcg.components.inspector :as inspector]
-            [sptcg.deck-builder.components :as components]
+            [sptcg.deck-builder.collection :as collection]
+            [sptcg.deck-builder.deck :as deck]
             [sptcg.components.draggable-window :as draggable-window]
             [sptcg.card-schema :as card-schema]
             [sptcg.model :as model]))
@@ -18,15 +19,26 @@
                   :settings {:inspector {:path [:deck-builder]}}
                   :windows {:window-inspector {:open false}}}))
 
-(defn deck-builder [{{cardbase :cardbase
-                      {land-deck :land
-                       spell-deck :spell} :current-deck} :deck-builder :as data}
+(defn deck-builder [{{:keys [cardbase current-deck]} :deck-builder :as data}
                     owner]
   (reify
     om/IDisplayName (display-name [_] "DeckBuilder")
-    om/IInitState   (init-state   [_] {:add-to-deck-chan (chan)})
+    om/IInitState   (init-state   [_] (let [c (chan)]
+                                        {:control-chan (chan)
+                                         :deck-chan (chan)}))
+    om/IWillMount
+    (will-mount [_]
+      (let [control-chan (om/get-state owner :control-chan)]
+        (go (while true
+              (when-let [[op value] (<! control-chan)]
+                (condp = op
+                  :use-collection-card
+                  (om/transact! current-deck #(card-schema/maybe-add-card-to-deck % value))))))))
     om/IRenderState
-    (render-state [_ {:keys [add-to-deck-chan]}]
+    (render-state [_ {:keys [control-chan
+                             deck-chan
+                             selected-collection-card
+                             selected-deck-card]}]
       (html
        [:div#layout
         [:div#main
@@ -34,15 +46,13 @@
           [:h1 "Steel Plains - Deck Builder"]]
          [:div.content
           [:div.pure-g
+           [:div.pure-u-10-24
+            (om/build collection/collection cardbase
+                      {:init-state {:control-chan control-chan}})]
            [:div.pure-u-1-2
-            (om/build components/collection cardbase
-                      {:init-state {:add-to-deck-chan add-to-deck-chan}})]
-           [:div.pure-u-1-4
-            (om/build components/deck {:type :land :cards land-deck}
-                      {:init-state {:add-to-deck-chan add-to-deck-chan}})]
-           [:div.pure-u-1-4
-            (om/build components/deck {:type :spell :cards spell-deck}
-                      {:init-state {:add-to-deck-chan add-to-deck-chan}})]]
+            #_(om/build deck/deck current-deck
+                        {:init-state {:control-chan control-chan
+                                      :deck-chan deck-chan}})]]
           (om/build inspector/inspector data)]]]))))
 
 (defmulti control-event

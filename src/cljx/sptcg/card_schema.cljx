@@ -1,5 +1,6 @@
 (ns sptcg.card-schema
   (:require [clojure.string :as string]
+            [clojure.walk :as walk]
             [schema.core :as s])
   #+clj (:require [schema.macros :as sm])
   #+cljs (:require-macros [schema.macros :as sm]))
@@ -83,10 +84,14 @@
   {:card BasicLand
    :amount s/Num})
 
+(def maximum-copies
+  {:land 4
+   :spell 3})
+
 (def NonBasicLandDeckCard
   {:card NonBasicLand
    :amount (s/both s/Num
-                   (at-most 4))})
+                   (at-most (maximum-copies :land)))})
 
 (def minimum-deck-size
   {:land 30
@@ -101,12 +106,46 @@
 (def SpellDeckCard
   {:card Spell
    :amount (s/both s/Num
-                   (at-most 3))})
+                   (at-most (maximum-copies :spell)))})
 
 (def SpellDeck
   {:type (s/eq :spell)
    :cards (s/both #{SpellDeckCard}
                   (total-amount-at-least (:spell minimum-deck-size)))})
+
+(defn deck-type-for-card [card]
+  (if (= :land (:type card))
+    :land :spell))
+
+(defn find-card-in-deck [deck card]
+  (->> deck
+       (filter #(= (:card card) card))
+       first))
+
+(defn maybe-add-card-to-deck [deck card]
+  (let [deck-type (deck-type-for-card card)]
+    (if (find-card-in-deck (get deck deck-type) card)
+      (walk/postwalk
+       (fn [elem]
+         (if (and (map? elem)
+                  (= (:card elem) card)
+                  (:amount elem)
+                  (> (maximum-copies deck-type) (:amount elem)))
+           (update-in elem [:amount] inc)
+           elem))
+       deck)
+      (update-in deck [deck-type] conj {:card card :amount 1}))))
+
+(defn remove-card-from-deck [deck card]
+  (let [deck-type (if (= :land (:type card))
+                    :land :spell)
+        deck (get deck deck-type)]
+    (when-let [existing-card (find-card-in-deck deck card)]
+      (if (-> existing-card :amount (> 1))
+        (-> deck
+            (disj existing-card)
+            (conj (update-in existing-card [:amount] dec)))
+        (disj deck existing-card)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Helpers
