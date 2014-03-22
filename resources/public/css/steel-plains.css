@@ -1,0 +1,37 @@
+#main {
+    margin: 1em 3em;
+}
+
+.card {
+    width: 200px;
+    height: 300px;
+    float: left;
+    margin: 10px;
+    padding: 0 10px;
+    border-radius: 8px;
+    border: 1px solid #999;
+    box-shadow: 1px 1px 3px 1px rgba(0,0,0,0.1);
+}
+
+.mana .blue {
+    color: blue;
+}
+
+.mana .green {
+    color: #1B7516;
+}
+
+.mana .red {
+    color: red;
+}
+
+.mana .white {
+    color: #C2C2C2;
+}
+
+hr {
+    border: 0;
+    color: #ddd;
+    background-color: #ddd;
+    height: 1px;
+}
