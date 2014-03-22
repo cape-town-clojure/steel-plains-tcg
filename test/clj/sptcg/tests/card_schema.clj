@@ -1,8 +1,8 @@
-(ns sptcg.tests.model
+(ns sptcg.tests.card-schema
   (:use expectations)
   (:require [schema.core :as s]
             [schema.macros :as sm]
-            [sptcg.model :refer :all]
+            [sptcg.card-schema :refer :all]
             [sptcg.tests.core :refer [expect-schema]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -30,7 +30,8 @@
 (expect-schema Land {:name     "Frozen Lake"
                      :size     1
                      :type     :land
-                     :produces {:colour :white :amount 1}})
+                     :produces #{{:colour :white :amount 1}
+                                 {:colour :blue :amount 1}}})
 
 (expect-schema BasicLand {:name     "Plains"
                           :size     1
@@ -41,18 +42,20 @@
 (expect-schema NonBasicLand {:name     "Frozen Lake"
                              :size     1
                              :type     :land
-                             :sub-type "Lake"})
+                             :sub-type "Lake"
+                             :produces #{{:colour :white :amount 1}
+                                         {:colour :blue :amount 1}}})
 
 ;; Spells
 
 (expect-schema Spell {:name "Heal"
                       :type :effect
-                      :cost [{:colour :white :amount 1}]})
+                      :cost #{{:colour :white :amount 1}}})
 (expect-schema Spell {:name "Grizzly Bear"
                       :type :creature
                       :sub-type "Bear"
-                      :cost [{:amount 1}
-                             {:colour :green :amount 1}]})
+                      :cost #{{:amount 1}
+                             {:colour :green :amount 1}}})
 
 ;; Cards
 
@@ -63,14 +66,17 @@
                       {:name     "Frozen Lake"
                        :size     1
                        :type     :land
-                       :sub-type "Lake"}{:name "Heal"
+                       :sub-type "Lake"
+                       :produces #{{:colour :white :amount 1}
+                                   {:colour :blue :amount 1}}}
+                      {:name "Heal"
                        :type :effect
-                       :cost [{:colour :white :amount 1}]}
+                       :cost #{{:colour :white :amount 1}}}
                       {:name "Grizzly Bear"
                        :type :creature
                        :sub-type "Bear"
-                       :cost [{:amount 1}
-                              {:colour :green :amount 1}]}])
+                       :cost #{{:amount 1}
+                              {:colour :green :amount 1}}}])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Decks
@@ -82,7 +88,9 @@
 (def frozen-lake {:name     "Frozen Lake"
                   :size     1
                   :type     :land
-                  :produces {:colour :white :amount 1}})
+                  :sub-type "Lake"
+                  :produces #{{:colour :white :amount 1}
+                              {:colour :blue :amount 1}}})
 
 (expect-schema BasicLandDeckCard {:card plains
                                   :amount 8})
@@ -91,63 +99,63 @@
                                      :amount 4})
 
 (expect-schema LandDeck {:type :land
-                         :cards [{:card plains :amount 26}
-                                 {:card frozen-lake :amount 4}]})
+                         :cards #{{:card plains :amount 26}
+                                  {:card frozen-lake :amount 4}}})
 
 (def creatures    [{:name     "Grizzly Bear"
                     :type     :creature
                     :sub-type "Bear"
-                    :cost     [{:amount 1}
-                               {:colour :green :amount 1}]}
-                   {:name     "Grizzly Bear"
+                    :cost     #{{:amount 1}
+                               {:colour :green :amount 1}}}
+                   {:name     "Grizzly Bear 2"
                     :type     :creature
                     :sub-type "Bear"
-                    :cost     [{:amount 1}
-                               {:colour :green :amount 1}]}
-                   {:name     "Grizzly Bear"
+                    :cost     #{{:amount 1}
+                               {:colour :green :amount 1}}}
+                   {:name     "Grizzly Bear 3"
                     :type     :creature
                     :sub-type "Bear"
-                    :cost     [{:amount 1}
-                               {:colour :green :amount 1}]}])
+                    :cost     #{{:amount 1}
+                               {:colour :green :amount 1}}}])
 (def effects      [{:name "Heal"
                     :type :effect
-                    :cost [{:colour :white :amount 1}]}
-                   {:name "Heal"
+                    :cost #{{:colour :white :amount 1}}}
+                   {:name "Heal 2"
                     :type :effect
-                    :cost [{:colour :white :amount 1}]}
-                   {:name "Heal"
+                    :cost #{{:colour :white :amount 1}}}
+                   {:name "Heal 3"
                     :type :effect
-                    :cost [{:colour :white :amount 1}]}])
+                    :cost #{{:colour :white :amount 1}}}])
 (def enchantments [{:name "Wild Growth"
                     :type :enchantment
-                    :cost [{:colour :green :amount 3}]}
-                   {:name "Wild Growth"
+                    :cost #{{:colour :green :amount 3}}}
+                   {:name "Wild Growth 2"
                     :type :enchantment
-                    :cost [{:colour :green :amount 3}]}
-                   {:name "Wild Growth"
+                    :cost #{{:colour :green :amount 3}}}
+                   {:name "Wild Growth 3"
                     :type :enchantment
-                    :cost [{:colour :green :amount 3}]}])
+                    :cost #{{:colour :green :amount 3}}}])
 (def structures   [{:name "Ballista"
                     :type :structure
-                    :cost [{:amount 2}
-                           {:colour :white :amount 2}]}
-                   {:name "Ballista"
+                    :cost #{{:amount 2}
+                           {:colour :white :amount 2}}}
+                   {:name "Ballista 2"
                     :type :structure
-                    :cost [{:amount 2}
-                           {:colour :white :amount 2}]}
-                   {:name "Ballista"
+                    :cost #{{:amount 2}
+                           {:colour :white :amount 2}}}
+                   {:name "Ballista 3"
                     :type :structure
-                    :cost [{:amount 2}
-                           {:colour :white :amount 2}]}])
+                    :cost #{{:amount 2}
+                           {:colour :white :amount 2}}}])
 (def equipments   [{:name "Shield"
                     :type :equipment
-                    :cost [{:colour :white :amount 1}]}
-                   {:name "Shield"
+                    :cost #{{:colour :white :amount 1}}}
+                   {:name "Shield 2"
                     :type :equipment
-                    :cost [{:colour :white :amount 1}]}
-                   {:name "Shield"
+                    :cost #{{:colour :white :amount 1}}}
+                   {:name "Shield 3"
                     :type :equipment
-                    :cost [{:colour :white :amount 1}]}])
+                    :cost #{{:colour :white :amount 1}}}])
 
 (expect-schema SpellDeckCard {:card   (first creatures)
                               :amount 3})
@@ -158,4 +166,5 @@
                                               enchantments
                                               structures
                                               equipments)
-                                      (map (fn [card] {:card card :amount 3})))})
+                                      (map (fn [card] {:card card :amount 3}))
+                                      set)})
