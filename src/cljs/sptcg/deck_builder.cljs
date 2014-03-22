@@ -11,18 +11,22 @@
             [sptcg.model :as model]))
 
 (def state (atom {:deck-builder {:cardbase model/cardbase
-                                 :current-deck {:land []
-                                                :spell []}}
+                                 :current-deck {:land #{}
+                                                :spell #{}}}
                   :comms {:controls (chan)
                           :error (chan)}
                   :settings {:inspector {:path [:deck-builder]}}
                   :windows {:window-inspector {:open false}}}))
 
-(defn deck-builder [{:keys [deck-builder] :as data} owner]
+(defn deck-builder [{{cardbase :cardbase
+                      {land-deck :land
+                       spell-deck :spell} :current-deck} :deck-builder :as data}
+                    owner]
   (reify
     om/IDisplayName (display-name [_] "DeckBuilder")
+    om/IInitState   (init-state   [_] {:add-to-deck-chan (chan)})
     om/IRenderState
-    (render-state [_ state]
+    (render-state [_ {:keys [add-to-deck-chan]}]
       (html
        [:div#layout
         [:div#main
@@ -31,11 +35,14 @@
          [:div.content
           [:div.pure-g
            [:div.pure-u-1-2
-            (om/build components/collection (:cardbase deck-builder))]
+            (om/build components/collection cardbase
+                      {:init-state {:add-to-deck-chan add-to-deck-chan}})]
            [:div.pure-u-1-4
-            (om/build components/deck {:type :land :cards (-> deck-builder :current-deck :land)})]
+            (om/build components/deck {:type :land :cards land-deck}
+                      {:init-state {:add-to-deck-chan add-to-deck-chan}})]
            [:div.pure-u-1-4
-            (om/build components/deck {:type :spell :cards (-> deck-builder :current-deck :spell)})]]
+            (om/build components/deck {:type :spell :cards spell-deck}
+                      {:init-state {:add-to-deck-chan add-to-deck-chan}})]]
           (om/build inspector/inspector data)]]]))))
 
 (defmulti control-event

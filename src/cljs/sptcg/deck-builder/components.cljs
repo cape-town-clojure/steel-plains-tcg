@@ -62,8 +62,9 @@
     (render-state [_ {:keys [select-chan]}]
       (html
        [:div.card
-        {:class (when selected? "selected")
-         :onClick #(put! select-chan [op data])}
+        (cond-> {}
+                selected? (assoc :class "selected")
+                select-chan (assoc :onClick #(put! select-chan [op (if selected? nil data)])))
         [:h3 name]
         (om/build (if (= :land type)
                     land spell)
@@ -123,10 +124,10 @@
       (let [select-chan (om/get-state owner :select-chan)]
         (go (while true
               (when-let [[key value] (<! select-chan)]
-                (prn key value)
                 (om/set-state! owner key value))))))
     om/IRenderState
-    (render-state [_ {:keys [select-chan
+    (render-state [_ {:keys [add-to-deck-chan
+                             select-chan
                              selected-card-type
                              selected-colour
                              selected-card]}]
@@ -143,6 +144,12 @@
                    :selected selected-colour}
                   {:init-state {:select-chan select-chan}
                    :opts {:op :selected-colour}})
+        [:hr]
+        [:button.pure-button.button-xlarge
+         {:onClick #(put! add-to-deck-chan selected-card)
+          :disabled (not selected-card)}
+         "Add to Deck"]
+        [:hr]
         (om/build card-list {:cards (->> data
                                          (card-schema/filter-by-type selected-card-type)
                                          (card-schema/filter-by-colour selected-colour))
@@ -153,11 +160,41 @@
 (defn deck [{:keys [type cards] :as data} owner]
   (reify
     om/IDisplayName (display-name [_] "Deck")
+    om/IInitState   (init-state   [_] {:select-chan (chan)
+                                       :selected-card nil})
+    om/IWillMount
+    (will-mount [_]
+      (let [select-chan (om/get-state owner :select-chan)]
+        (go (while true
+              (when-let [[key value] (<! select-chan)]
+                (prn key value)
+                (om/set-state! owner key value)))))
+      (let [add-to-deck-chan (om/get-state owner :add-to-deck-chan)]
+        (go (while true
+              (when-let [card (<! add-to-deck-chan)]
+                (prn "add to deck" type (:name card))
+                (when (or (= :land type (:type card))
+                          (and (not= :land type)
+                               (not= :land (:type card))))
+                  (om/transact! cards #(conj % card))))))))
     om/IRenderState
-    (render-state [_ state]
+    (render-state [_ {:keys [select-chan
+                             selected-card]}]
       (html
        [:div.deck
         [:h2 (card-schema/labelise-enum type) " Deck"]
         [:p (card-schema/deck-card-count-label type cards)]
+        #_(
+         [:hr]
+         [:button.pure-button.button-xlarge
+          {:onClick #(do
+                       (put! select-chan [:selected-card nil])
+                       (om/transact! cards (fn [cards] (disj cards card))))
+           :disabled (not selected-card)}
+          "Remove from Deck"])
         [:hr]
-        (om/build card-list cards)]))))
+        (om/build card-list {:cards cards})
+        #_(om/build card-list {:cards cards
+                             :selected selected-card}
+                  {:init-state {:select-chan select-chan}
+                   :opts {:op :selected-card}})]))))

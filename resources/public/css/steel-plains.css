@@ -41,3 +41,7 @@ hr {
     background-color: #ddd;
     height: 1px;
 }
+
+.button-xlarge {
+    font-size: 125%;
+}
