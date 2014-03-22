@@ -5,24 +5,38 @@
             [sablono.core :as html :refer-macros [html]]
             [sptcg.components.editor :as editor]
             [sptcg.components.inspector :as inspector]
+            [sptcg.deck-builder.components :as components]
             [sptcg.components.draggable-window :as draggable-window]
+            [sptcg.card-schema :as card-schema]
             [sptcg.model :as model]))
 
-(def state (atom {:deck-builder {:cardbase model/cardbase}
+(def state (atom {:deck-builder {:cardbase model/cardbase
+                                 :current-deck {:land []
+                                                :spell []}}
                   :comms {:controls (chan)
                           :error (chan)}
                   :settings {:inspector {:path [:deck-builder]}}
                   :windows {:window-inspector {:open false}}}))
 
-(defn deck-builder [data owner]
+(defn deck-builder [{:keys [deck-builder] :as data} owner]
   (reify
     om/IDisplayName (display-name [_] "DeckBuilder")
     om/IRenderState
     (render-state [_ state]
       (html
-       [:div "Deck builder"
-        (om/build inspector/inspector data)]
-       ))))
+       [:div#layout
+        [:div#main
+         [:div.header
+          [:h1 "Steel Plains - Deck Builder"]]
+         [:div.content
+          [:div.pure-g
+           [:div.pure-u-1-2
+            (om/build components/collection (:cardbase deck-builder))]
+           [:div.pure-u-1-4
+            (om/build components/deck {:type :land :cards (-> deck-builder :current-deck :land)})]
+           [:div.pure-u-1-4
+            (om/build components/deck {:type :spell :cards (-> deck-builder :current-deck :spell)})]]
+          (om/build inspector/inspector data)]]]))))
 
 (defmulti control-event
   (fn [target message args state] message))
@@ -45,11 +59,14 @@
   (if (= f deck-builder)
     (om/build* editor/editor (om/graft [f cursor m] cursor))
     ::om/pass))
+
 (defn start!
   []
   (let [comms (:comms @state)
         target (.getElementById js/document "deck-builder")]
-    (om/root deck-builder state {:target target})
+    (om/root deck-builder state {:target target
+                                 ;:instrument instrument
+                                 })
     (go (while true
           (alt!
             (:controls comms)
