@@ -38,6 +38,9 @@
 ;; This is a convenience function for REPL use only...
 
 (defn db [] (d/db (d/connect dburi)))
+(defn conn [] (d/connect dburi))
+
+(defn newent [& {:as ent}] (assoc ent :db/id (d/tempid :db.part/user)))
 
 (defn wrap-tx [handler]
   (fn [req]

@@ -1,7 +1,9 @@
 (ns sptcg.schema
   (:use [datomic-schema.schema :only [defpart defschema fields part]])
-  (:require [datomic.api :as d])
-  (:require [datomic-schema.schema :as s]))
+  (:require
+   [datomic.api :as d]
+   [datomic-schema.schema :as s]
+   [sptcg.card-schema :as card-schema]))
 
 ;; Possible types on fields:
 ;; :keyword :string :boolean :long :bigint :float :double :bigdec :ref :instant :uuid :uri :bytes
@@ -13,6 +15,7 @@
 ;; [:arbitrary "Enum" :values]
 
 ;; See http://docs.datomic.com/schema.html for more detailed information
+
 
 (defschema player
   (fields
@@ -36,18 +39,35 @@
    [x :long]
    [y :long]))
 
-(defschema deck
-  (fields
-   [title :string :indexed]))
-
 (defschema card
   (fields
-   [title :string :indexed]
-   [deck :ref]))
+   [cardtype :ref]
+   [foil :boolean]))
 
-(defschema land
+(defschema deck
   (fields
-   [title :string :indexed]))
+   [name :string :indexed]
+   [spells :ref :many]
+   [lands :ref :many]))
+
+(defschema cardtype
+  (fields
+   [name :string :indexed]
+   [text :string]
+   [type :enum (vec card-schema/card-types)]
+   [subtype :string :many]
+   [cost :ref :component :many]
+   [produce :ref :component :many]
+   [attack :long]
+   [health :long]
+   [deck :ref]
+   [size :long]))
+
+(defschema mana
+  (fields
+   [colour :enum (vec card-schema/colours)]
+   [amount :long]))
+
 
 
 (comment

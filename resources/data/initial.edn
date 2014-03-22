@@ -1,0 +1,118 @@
+[{:db/id #db/id[:db.part/user -1]
+  :player/name "John"}
+
+ {:db/id #db/id[:db.part/user -2]
+  :cardtype/name "Frozen Lake"
+  :cardtype/size 1
+  :cardtype/type :cardtype.type/land
+  :cardtype/subtype "Lake"
+  :cardtype/produce [{:mana/colour :mana.colour/white :mana/amount 1}
+                     {:mana/colour :mana.colour/blue :mana/amount 1}]}
+
+ {:db/id #db/id[:db.part/user -3]
+  :cardtype/name "Plains"
+  :cardtype/size 1
+  :cardtype/type :cardtype.type/land
+  :cardtype/subtype "Plains"
+  :cardtype/produce [{:mana/colour :mana.colour/white :mana/amount 1}
+                     {:mana/colour :mana.colour/green :mana/amount 1}]}
+
+ {:db/id #db/id[:db.part/user -4]
+  :cardtype/name "Heal"
+  :cardtype/text "Heal a creature by {amount}"
+  :cardtype/type :cardtype.type/effect
+  :cardtype/cost [{:mana/colour :mana.colour/white :mana/amount 1}]}
+
+ {:db/id #db/id[:db.part/user -5]
+  :cardtype/name "Grizzly Bear"
+  :cardtype/type :cardtype.type/creature
+  :cardtype/attack 3
+  :cardtype/health 3
+  :cardtype/cost [{:mana/colour :mana.colour/none :mana/amount 2}
+                  {:mana/colour :mana.colour/green :mana/amount 1}]}
+
+ {:db/id #db/id[:db.part/user -6]
+  :cardtype/name "Wild Growth"
+  :cardtype/text "Enchanted land has double mana production"
+  :cardtype/type :cardtype.type/enchantment
+  :cardtype/cost [{:mana/colour :mana.colour/green :mana/amount 1}]}
+
+ {:db/id #db/id[:db.part/user -7]
+  :cardtype/name "Ballista"
+  :cardtype/type :cardtype.type/structure
+  :cardtype/text "Ranged attack only."
+  :cardtype/health 4
+  :cardtype/attack 5
+  :cardtype/cost [{:mana/colour :mana.colour/none :mana/amount 2}
+                  {:mana/colour :mana.colour/white :mana/amount 2}]}
+
+ {:db/id #db/id[:db.part/user -8]
+  :cardtype/name "Shield"
+  :cardtype/text "Absorbs 1 damage from every source."
+  :cardtype/type :cardtype.type/equipment
+  :cardtype/cost [{:mana/colour :mana.colour/white :mana/amount 1}]}
+
+ {:db/id #db/id[:db.part/user -50]
+  :owner/player #db/id[:db.part/user -1]
+  :card/cardtype #db/id[:db.part/user -2]}
+
+ {:db/id #db/id[:db.part/user -51]
+  :owner/player #db/id[:db.part/user -1]
+  :card/cardtype #db/id[:db.part/user -2]
+  :card/foil true}
+
+ {:db/id #db/id[:db.part/user -52]
+  :owner/player #db/id[:db.part/user -1]
+  :card/cardtype #db/id[:db.part/user -3]}
+ 
+ {:db/id #db/id[:db.part/user -53]
+  :owner/player #db/id[:db.part/user -1]
+  :card/cardtype #db/id[:db.part/user -4]}
+
+ {:db/id #db/id[:db.part/user -54]
+  :owner/player #db/id[:db.part/user -1]
+  :card/cardtype #db/id[:db.part/user -5]}
+
+ {:db/id #db/id[:db.part/user -55]
+  :owner/player #db/id[:db.part/user -1]
+  :card/cardtype #db/id[:db.part/user -5]}
+ 
+ {:db/id #db/id[:db.part/user -56]
+  :owner/player #db/id[:db.part/user -1]
+  :card/cardtype #db/id[:db.part/user -5]}
+ 
+ {:db/id #db/id[:db.part/user -57]
+  :owner/player #db/id[:db.part/user -1]
+  :card/cardtype #db/id[:db.part/user -6]}
+
+ {:db/id #db/id[:db.part/user -58]
+  :owner/player #db/id[:db.part/user -1]
+  :card/cardtype #db/id[:db.part/user -6]}
+ 
+ {:db/id #db/id[:db.part/user -59]
+  :owner/player #db/id[:db.part/user -1]
+  :card/cardtype #db/id[:db.part/user -7]}
+ 
+ {:db/id #db/id[:db.part/user -60]
+  :owner/player #db/id[:db.part/user -1]
+  :card/cardtype #db/id[:db.part/user -8]}
+
+ {:db/id #db/id[:db.part/user -100]
+  :owner/player #db/id[:db.part/user -1]
+  :deck/name "My First Deck"
+  :deck/spells
+  [#db/id[:db.part/user -53]
+   #db/id[:db.part/user -54]
+   #db/id[:db.part/user -55]
+   #db/id[:db.part/user -56]
+   #db/id[:db.part/user -57]
+   #db/id[:db.part/user -58]
+   #db/id[:db.part/user -59]
+   #db/id[:db.part/user -60]]
+  :deck/lands
+  [#db/id[:db.part/user -50]
+   #db/id[:db.part/user -51]
+   #db/id[:db.part/user -52]]}
+
+ ]
+
