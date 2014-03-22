@@ -55,27 +55,34 @@
         (when produces
           [:p "Produces: " (om/build manas produces)])]))))
 
-(defn card [data owner]
+(defn card [{:keys [selected? name type] :as data} owner {:keys [op]}]
   (reify
     om/IDisplayName (display-name [_] "Card")
     om/IRenderState
-    (render-state [_ state]
+    (render-state [_ {:keys [select-chan]}]
       (html
        [:div.card
-        [:h3 (:name data)]
-        (om/build (if (= :land (:type data))
+        {:class (when selected? "selected")
+         :onClick #(put! select-chan [op data])}
+        [:h3 name]
+        (om/build (if (= :land type)
                     land spell)
                   data)]))))
 
-(defn card-list [{:keys [cards selected]} owner]
+(defn card-list [{:keys [cards selected]} owner {:keys [op]}]
   (reify
     om/IDisplayName (display-name [_] "CardList")
     om/IRenderState
-    (render-state [_ state]
+    (render-state [_ {:keys [select-chan]}]
       (html
        [:div.card-list
         (if (seq cards)
-          (om/build-all card cards)
+          (om/build-all card cards
+                        {:fn (fn [card]
+                               (cond-> card
+                                       (= card selected) (assoc :selected? true)))
+                         :init-state {:select-chan select-chan}
+                         :opts {:op op}})
           "No cards.")]))))
 
 (defn enum-toggle-button [{:keys [enum selected?]} owner {:keys [op]}]
@@ -116,6 +123,7 @@
       (let [select-chan (om/get-state owner :select-chan)]
         (go (while true
               (when-let [[key value] (<! select-chan)]
+                (prn key value)
                 (om/set-state! owner key value))))))
     om/IRenderState
     (render-state [_ {:keys [select-chan
