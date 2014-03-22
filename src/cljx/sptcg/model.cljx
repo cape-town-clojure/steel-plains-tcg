@@ -3,18 +3,19 @@
   #+clj (:require [schema.macros :as sm])
   #+cljs (:require-macros [schema.macros :as sm]))
 
-(defn is? [v] (s/pred #(= v %)))
+(defn at-most [amount] (s/pred (partial >= amount) 'at-most))
 
-(defn at-most [n] (s/pred (partial >= n)))
-
-(defn total-amount-at-least [n]
+(defn total-amount-at-least [amount]
   (s/pred
    (fn [deck-cards]
      (->> deck-cards
-          (map (fn [deck-card]
-                 (or (:amount deck-card) 1)))
+          (map #(or (:amount %) 1))
           (apply +)
-          (<= n)))))
+          (<= amount)))
+   'total-amount-at-least))
+
+(defn one-or-many [schema]
+  (s/if #(set? %) #{schema} schema))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Cards
@@ -22,7 +23,10 @@
 (def Colours (s/enum :none :green :blue :red :white))
 
 (def Mana
-  {(s/optional-key :colour) (s/either Colours #{Colours})
+  "Can have no colour at all, a single colour, or any amount of
+   colours. More than one colour makes this mana 'hybrid' mana.
+   A lack of a colour is the same as providing the :none colour."
+  {(s/optional-key :colour) (one-or-many Colours)
    :amount s/Int})
 
 (def Card
@@ -32,9 +36,9 @@
 
 (def Land
   (merge Card
-         {:type (is? :land)
+         {:type (s/eq :land)
           :size LandSizes
-          (s/optional-key :produces) (s/either Mana #{Mana})}))
+          (s/optional-key :produces) (one-or-many Mana)}))
 
 ;; haven't yet specified the speed and size of basic lands.
 ;; not sure about their usage?
@@ -53,8 +57,9 @@
 (def Spell
   (merge Card
          {:cost [Mana]
-          :type (s/either SpellTypes #{SpellTypes})
-          (s/optional-key :sub-type) s/Str}))
+          :type (one-or-many SpellTypes)
+          (s/optional-key :sub-type) s/Str
+          (s/optional-key :produces) (one-or-many Mana)}))
 
 (def Cards [(s/either BasicLand NonBasicLand Spell)])
 
@@ -73,7 +78,7 @@
                    (at-most 4))})
 
 (def LandDeck
-  {:type (is? :land)
+  {:type (s/eq :land)
    :cards (s/both [(s/either BasicLandDeckCard
                              NonBasicLandDeckCard)]
                   (total-amount-at-least 30))})
@@ -84,7 +89,7 @@
                    (at-most 3))})
 
 (def SpellDeck
-  {:type (is? :spell)
+  {:type (s/eq :spell)
    :cards (s/both [SpellDeckCard]
                   (total-amount-at-least 40))})
 
