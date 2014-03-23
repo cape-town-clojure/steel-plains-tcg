@@ -5,7 +5,6 @@
             [sablono.core :as html :refer-macros [html]]
             [sptcg.card-schema :as card-schema]
             [sptcg.deck-builder.card :as card]
-            [sptcg.deck-builder.enum-toggle-buttons :as enum-toggle-buttons]
             [sptcg.model :as model]))
 
 (defn deck [{:keys [land spell] :as data} owner]
@@ -20,12 +19,16 @@
           [:h2 (card-schema/labelise-enum :land) " Deck"]
           [:p (card-schema/deck-card-count-label :land land)]
           [:hr]
-          (om/build card/card-list {:cards land}
-                    {:init-state {:control-chan control-chan}})]]
+          (om/build card/card-list land
+                    {:init-state {:control-chan control-chan}
+                     :opts {:item-component card/deck-card
+                            :display-name "LandDeck"}})]]
         [:div.pure-u-1-2
          [:div.deck
           [:h2 (card-schema/labelise-enum :spell) " Deck"]
           [:p (card-schema/deck-card-count-label :spell spell)]
           [:hr]
-          (om/build card/card-list {:cards spell}
-                    {:init-state {:control-chan control-chan}})]]]))))
+          (om/build card/card-list spell
+                    {:init-state {:control-chan control-chan}
+                     :opts {:item-component card/deck-card
+                            :display-name "SpellDeck"}})]]]))))

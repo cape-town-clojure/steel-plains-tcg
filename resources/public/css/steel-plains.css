@@ -11,6 +11,7 @@
     border-radius: 8px;
     border: 1px solid #999;
     box-shadow: 1px 1px 3px 1px rgba(0,0,0,0.1);
+    background: #fff;
 }
 
 .card.selected {
@@ -44,4 +45,48 @@ hr {
 
 .button-xlarge {
     font-size: 125%;
+}
+
+.deck-card {
+    position: relative;
+}
+
+.deck-card .card {
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+.deck-card .card.card0 {
+    z-index: 4;
+}
+
+.deck-card .card.card1 {
+    left: 2px;
+    z-index: 3;
+    transform: rotate(1deg);
+    -webkit-transform: rotate(1deg);
+    -moz-transform: rotate(1deg);
+    -o-transform: rotate(1deg);
+    -ms-transform: rotate(1deg);
+}
+
+.deck-card .card.card2 {
+    left: 5px;
+    z-index: 2;
+    transform: rotate(2deg);
+    -webkit-transform: rotate(2deg);
+    -moz-transform: rotate(2deg);
+    -o-transform: rotate(2deg);
+    -ms-transform: rotate(2deg);
+}
+
+.deck-card .card.card3 {
+    left: 8px;
+    z-index: 1;
+    transform: rotate(3deg);
+    -webkit-transform: rotate(3deg);
+    -moz-transform: rotate(3deg);
+    -o-transform: rotate(3deg);
+    -ms-transform: rotate(3deg);
 }

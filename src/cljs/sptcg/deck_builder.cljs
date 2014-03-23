@@ -19,8 +19,7 @@
                   :settings {:inspector {:path [:deck-builder :current-deck]}}
                   :windows {:window-inspector {:open false}}}))
 
-(defn deck-builder [{{:keys [cardbase current-deck]} :deck-builder :as data}
-                    owner]
+(defn deck-builder [{{:keys [cardbase current-deck]} :deck-builder :as data} owner]
   (reify
     om/IDisplayName (display-name [_] "DeckBuilder")
     om/IInitState   (init-state   [_] {:control-chan (chan)})
@@ -32,7 +31,8 @@
                 (condp = op
                   :use-collection-card
                   (om/transact! current-deck
-                                #(card-schema/maybe-add-card-to-deck % value))))))))
+                                #(card-schema/maybe-add-card-to-deck
+                                  % (model/card-by-id cardbase (:id value))))))))))
     om/IRenderState
     (render-state [_ {:keys [control-chan
                              selected-collection-card
@@ -44,9 +44,6 @@
           [:h1 "Steel Plains - Deck Builder"]]
          [:div.content
           [:div.pure-g
-           [:div.pure-u-10-24
-            (om/build collection/collection cardbase
-                      {:init-state {:control-chan control-chan}})]
            [:div.pure-u-1-2
             (om/build collection/collection cardbase
                       {:init-state {:control-chan control-chan}})]

@@ -23,7 +23,7 @@
                 (condp = op
                   :select-card-type (om/set-state! owner :selected-card-type value)
                   :select-colour    (om/set-state! owner :selected-colour value)
-                  :use-card         (put! control-chan [:use-collection-card value])))))))
+                  :action-card      (put! control-chan [:use-collection-card value])))))))
     om/IRenderState
     (render-state [_ {:keys [collection-chan
                              selected-card-type
@@ -46,5 +46,7 @@
                   (->> data
                        (card-schema/filter-by-type selected-card-type)
                        (card-schema/filter-by-colour selected-colour))
-                  {:init-state {:control-chan collection-chan}})]))))
+                  {:init-state {:control-chan collection-chan}
+                   :opts {:item-component card/card
+                          :display-name "Collection"}})]))))
 
