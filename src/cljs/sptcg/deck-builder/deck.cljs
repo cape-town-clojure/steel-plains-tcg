@@ -29,4 +29,3 @@
           [:hr]
           (om/build card/card-list {:cards spell}
                     {:init-state {:control-chan control-chan}})]]]))))
-

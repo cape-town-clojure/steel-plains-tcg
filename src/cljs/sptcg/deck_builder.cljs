@@ -44,6 +44,9 @@
           [:h1 "Steel Plains - Deck Builder"]]
          [:div.content
           [:div.pure-g
+           [:div.pure-u-10-24
+            (om/build collection/collection cardbase
+                      {:init-state {:control-chan control-chan}})]
            [:div.pure-u-1-2
             (om/build collection/collection cardbase
                       {:init-state {:control-chan control-chan}})]
