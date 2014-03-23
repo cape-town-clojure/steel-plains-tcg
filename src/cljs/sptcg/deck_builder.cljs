@@ -16,16 +16,14 @@
                                                 :spell #{}}}
                   :comms {:controls (chan)
                           :error (chan)}
-                  :settings {:inspector {:path [:deck-builder]}}
+                  :settings {:inspector {:path [:deck-builder :current-deck]}}
                   :windows {:window-inspector {:open false}}}))
 
 (defn deck-builder [{{:keys [cardbase current-deck]} :deck-builder :as data}
                     owner]
   (reify
     om/IDisplayName (display-name [_] "DeckBuilder")
-    om/IInitState   (init-state   [_] (let [c (chan)]
-                                        {:control-chan (chan)
-                                         :deck-chan (chan)}))
+    om/IInitState   (init-state   [_] {:control-chan (chan)})
     om/IWillMount
     (will-mount [_]
       (let [control-chan (om/get-state owner :control-chan)]
@@ -33,10 +31,10 @@
               (when-let [[op value] (<! control-chan)]
                 (condp = op
                   :use-collection-card
-                  (om/transact! current-deck #(card-schema/maybe-add-card-to-deck % value))))))))
+                  (om/transact! current-deck
+                                #(card-schema/maybe-add-card-to-deck % value))))))))
     om/IRenderState
     (render-state [_ {:keys [control-chan
-                             deck-chan
                              selected-collection-card
                              selected-deck-card]}]
       (html
@@ -46,13 +44,12 @@
           [:h1 "Steel Plains - Deck Builder"]]
          [:div.content
           [:div.pure-g
-           [:div.pure-u-10-24
+           [:div.pure-u-1-2
             (om/build collection/collection cardbase
                       {:init-state {:control-chan control-chan}})]
            [:div.pure-u-1-2
-            #_(om/build deck/deck current-deck
-                        {:init-state {:control-chan control-chan
-                                      :deck-chan deck-chan}})]]
+            (om/build deck/deck current-deck
+                      {:init-state {:control-chan control-chan}})]]
           (om/build inspector/inspector data)]]]))))
 
 (defmulti control-event

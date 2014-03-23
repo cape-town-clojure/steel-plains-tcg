@@ -117,14 +117,14 @@
   (if (= :land (:type card))
     :land :spell))
 
-(defn find-card-in-deck [deck card]
+(defn card-in-deck? [deck card]
   (->> deck
-       (filter #(= (:card card) card))
-       first))
+       (filter #(= (:card %) card))
+       seq))
 
 (defn maybe-add-card-to-deck [deck card]
   (let [deck-type (deck-type-for-card card)]
-    (if (find-card-in-deck (get deck deck-type) card)
+    (if (card-in-deck? (get deck deck-type) card)
       (walk/postwalk
        (fn [elem]
          (if (and (map? elem)
@@ -137,15 +137,17 @@
       (update-in deck [deck-type] conj {:card card :amount 1}))))
 
 (defn remove-card-from-deck [deck card]
-  (let [deck-type (if (= :land (:type card))
-                    :land :spell)
+  (let [deck-type (deck-type-for-card card)
         deck (get deck deck-type)]
-    (when-let [existing-card (find-card-in-deck deck card)]
-      (if (-> existing-card :amount (> 1))
-        (-> deck
-            (disj existing-card)
-            (conj (update-in existing-card [:amount] dec)))
-        (disj deck existing-card)))))
+    (walk/postwalk
+     (fn [elem]
+       (if (and (map? elem)
+                (= (:card elem) card))
+         (if (< 1 (:amount elem))
+           (update-in elem [:amount] dec)
+           nil)
+         elem))
+     deck)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Helpers

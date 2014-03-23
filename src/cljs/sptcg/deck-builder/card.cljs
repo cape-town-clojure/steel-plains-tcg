@@ -60,27 +60,43 @@
   (reify
     om/IDisplayName (display-name [_] "Card")
     om/IRenderState
-    (render-state [_ {:keys [control-chan]}]
+    (render-state [_ {:keys [control-chan card-list-chan]}]
       (html
        [:div.card
-        (cond-> {:onClick #(put! control-chan [:select-card data])
-                 :onDoubleClick #(put! control-chan [:use-card data])}
+        (cond-> {:onClick #(put! card-list-chan [:select-card data])}
                 selected? (assoc :class "selected"))
         [:h3 name]
-        (om/build (if (= :land type) land spell) data)]))))
+        (om/build (if (= :land type) land spell) data)
+        (when selected?
+          [:button.pure-button {:onClick #(put! control-chan [:use-card data])}
+           "Use"])]))))
 
-(defn card-list [{:keys [cards selected]} owner]
+(defn card-list [data owner]
   (reify
     om/IDisplayName (display-name [_] "CardList")
+    om/IInitState   (init-state   [_] {:card-list-chan (chan)
+                                       :selected-card nil})
+    om/IWillMount
+    (will-mount [_]
+      (let [card-list-chan (om/get-state owner :card-list-chan)]
+        (go (while true
+              (when-let [[op value] (<! card-list-chan)]
+                (condp = op
+                  :select-card
+                  (om/set-state! owner :selected-card
+                                 (if (= value (om/get-state owner :selected-card))
+                                   nil value))))))))
     om/IRenderState
-    (render-state [_ {:keys [control-chan]}]
+    (render-state [_ {:keys [control-chan card-list-chan selected-card]}]
       (html
        [:div.card-list
-        (if (seq cards)
-          (om/build-all card cards
+        (if (seq data)
+          (om/build-all card data
                         {:fn (fn [card]
                                (cond-> card
-                                       (= card selected) (assoc :selected? true)))
-                         :init-state {:control-chan control-chan}})
+                                       (= card selected-card) (assoc :selected? true)))
+                         :init-state {:control-chan control-chan
+                                      :card-list-chan card-list-chan
+                                      :selected selected-card}})
           "No cards.")]))))
 
