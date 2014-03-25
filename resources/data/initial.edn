@@ -1,6 +1,6 @@
 [{:db/id #db/id[:db.part/user -1]
-  :player/name "John"}
-
+  :user/name "John"}
+ 
  {:db/id #db/id[:db.part/user -2]
   :cardtype/name "Frozen Lake"
   :cardtype/size 1
@@ -53,52 +53,52 @@
   :cardtype/cost [{:mana/colour :mana.colour/white :mana/amount 1}]}
 
  {:db/id #db/id[:db.part/user -50]
-  :owner/player #db/id[:db.part/user -1]
+  :owner/user #db/id[:db.part/user -1]
   :card/cardtype #db/id[:db.part/user -2]}
 
  {:db/id #db/id[:db.part/user -51]
-  :owner/player #db/id[:db.part/user -1]
+  :owner/user #db/id[:db.part/user -1]
   :card/cardtype #db/id[:db.part/user -2]
   :card/foil true}
 
  {:db/id #db/id[:db.part/user -52]
-  :owner/player #db/id[:db.part/user -1]
+  :owner/user #db/id[:db.part/user -1]
   :card/cardtype #db/id[:db.part/user -3]}
  
  {:db/id #db/id[:db.part/user -53]
-  :owner/player #db/id[:db.part/user -1]
+  :owner/user #db/id[:db.part/user -1]
   :card/cardtype #db/id[:db.part/user -4]}
 
  {:db/id #db/id[:db.part/user -54]
-  :owner/player #db/id[:db.part/user -1]
+  :owner/user #db/id[:db.part/user -1]
   :card/cardtype #db/id[:db.part/user -5]}
 
  {:db/id #db/id[:db.part/user -55]
-  :owner/player #db/id[:db.part/user -1]
+  :owner/user #db/id[:db.part/user -1]
   :card/cardtype #db/id[:db.part/user -5]}
  
  {:db/id #db/id[:db.part/user -56]
-  :owner/player #db/id[:db.part/user -1]
+  :owner/user #db/id[:db.part/user -1]
   :card/cardtype #db/id[:db.part/user -5]}
  
  {:db/id #db/id[:db.part/user -57]
-  :owner/player #db/id[:db.part/user -1]
+  :owner/user #db/id[:db.part/user -1]
   :card/cardtype #db/id[:db.part/user -6]}
 
  {:db/id #db/id[:db.part/user -58]
-  :owner/player #db/id[:db.part/user -1]
+  :owner/user #db/id[:db.part/user -1]
   :card/cardtype #db/id[:db.part/user -6]}
  
  {:db/id #db/id[:db.part/user -59]
-  :owner/player #db/id[:db.part/user -1]
+  :owner/user #db/id[:db.part/user -1]
   :card/cardtype #db/id[:db.part/user -7]}
  
  {:db/id #db/id[:db.part/user -60]
-  :owner/player #db/id[:db.part/user -1]
+  :owner/user #db/id[:db.part/user -1]
   :card/cardtype #db/id[:db.part/user -8]}
 
  {:db/id #db/id[:db.part/user -100]
-  :owner/player #db/id[:db.part/user -1]
+  :owner/user #db/id[:db.part/user -1]
   :deck/name "My First Deck"
   :deck/spells
   [#db/id[:db.part/user -53]
