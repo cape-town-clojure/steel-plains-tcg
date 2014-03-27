@@ -39,8 +39,10 @@
                    :opts {:op :select-colour}})
         [:hr]
         (om/build card/card-list (->> cards
-                                      (filter (partial card-schema/matches-type? selected-card-type))
-                                      (filter (partial card-schema/matches-colour? selected-colour)))
+                                      (filter (partial card-schema/matches-type?
+                                                       selected-card-type))
+                                      (filter (partial card-schema/matches-colour?
+                                                       selected-colour)))
                   {:init-state {:control-chan collection-chan}
                    :opts {:item-component card/card
                           :display-name "Collection"

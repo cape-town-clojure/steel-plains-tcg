@@ -60,7 +60,9 @@
     #js {:display "none"}
     #js {:display "block"}))
 
-(defn card [{:keys [hidden? name type id] :as data} owner {:keys [class action-label] :as opts}]
+(defn card [{:keys [hidden? name type id] :as data}
+            owner
+            {:keys [class action-label] :as opts}]
   (reify
     om/IDisplayName (display-name [_] "Card")
     om/IRenderState

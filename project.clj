@@ -45,6 +45,15 @@
   :resource-paths ["resources"]
   :test-paths ["target/generated/clj" "test/clj"]
 
+  :cljx
+  {:builds
+   [{:source-paths ["src/cljx/"]
+     :output-path "target/generated/clj"
+     :rules :clj}
+    {:source-paths ["src/cljx/"]
+     :output-path "target/generated/cljs"
+     :rules :cljs}]}
+
   :cljsbuild
   {:builds
    [{:id "dev"
@@ -57,14 +66,5 @@
       :externs ["react/externs/react.js"]
       :optimizations :none
       :source-map true}}]}
-
-  :cljx
-  {:builds
-   [{:source-paths ["src/cljx/"]
-     :output-path "target/generated/clj"
-     :rules :clj}
-    {:source-paths ["src/cljx/"]
-     :output-path "target/generated/cljs"
-     :rules :cljs}]}
 
   :main sptcg.core)

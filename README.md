@@ -1,5 +1,4 @@
 # Steel Plains
-==============
 
 The home for the trading card game we're building in the Cape Town Clojure User Group.
 
@@ -19,7 +18,7 @@ cljx/cljs file and have the changes appear when you refresh the
 browser.
 
 You can press `ctrl-esc` to see a draggable debug window showing the
-state of the deck builder.P
+state of the deck builder.
 
 ## About the game
 
