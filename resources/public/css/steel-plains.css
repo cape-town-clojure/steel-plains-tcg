@@ -3,8 +3,8 @@
 }
 
 .card {
-    width: 200px;
-    height: 300px;
+    width: 150px;
+    height: 220px;
     float: left;
     margin: 10px;
     padding: 0 10px;
@@ -15,7 +15,6 @@
 }
 
 .card.selected {
-
     border: 1px solid #666;
     box-shadow: 1px 1px 3px 1px rgba(0,0,0,0.3);
 }
@@ -49,10 +48,16 @@ hr {
 
 .deck-card {
     position: relative;
+    width: 150px;
+    height: 220px;
+    float: left;
+    margin: 10px;
+    padding: 0 10px;
 }
 
 .deck-card .card {
     position: absolute;
+    float: none;
     left: 0;
     top: 0;
 }

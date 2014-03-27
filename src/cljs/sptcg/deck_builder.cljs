@@ -11,9 +11,11 @@
             [sptcg.card-schema :as card-schema]
             [sptcg.model :as model]))
 
-(def state (atom {:deck-builder {:cardbase model/cardbase
-                                 :current-deck {:land #{}
-                                                :spell #{}}}
+(def state (atom {:deck-builder {:cardbase {:cards model/cardbase
+                                            :selected-card-type :all
+                                            :selected-colour :all}
+                                 :current-deck {:land []
+                                                :spell []}}
                   :comms {:controls (chan)
                           :error (chan)}
                   :settings {:inspector {:path [:deck-builder :current-deck]}}
@@ -30,13 +32,19 @@
               (when-let [[op value] (<! control-chan)]
                 (condp = op
                   :use-collection-card
-                  (om/transact! current-deck
-                                #(card-schema/maybe-add-card-to-deck
-                                  % (model/card-by-id cardbase (:id value))))))))))
+                  (om/transact! data :deck-builder
+                                #(update-in % [:current-deck]
+                                            card-schema/maybe-add-card-to-deck
+                                            (model/card-by-id (-> % :cardbase :cards)
+                                                              value)))
+                  :remove-deck-card
+                  (om/transact! data :deck-builder
+                                #(update-in % [:current-deck]
+                                            card-schema/remove-card-from-deck
+                                            (model/card-by-id (-> % :cardbase :cards)
+                                                              value)))))))))
     om/IRenderState
-    (render-state [_ {:keys [control-chan
-                             selected-collection-card
-                             selected-deck-card]}]
+    (render-state [_ {:keys [control-chan]}]
       (html
        [:div#layout
         [:div#main
@@ -44,10 +52,10 @@
           [:h1 "Steel Plains - Deck Builder"]]
          [:div.content
           [:div.pure-g
-           [:div.pure-u-1-2
+           [:div.pure-u-10-24
             (om/build collection/collection cardbase
                       {:init-state {:control-chan control-chan}})]
-           [:div.pure-u-1-2
+           [:div.pure-u-14-24
             (om/build deck/deck current-deck
                       {:init-state {:control-chan control-chan}})]]
           (om/build inspector/inspector data)]]]))))

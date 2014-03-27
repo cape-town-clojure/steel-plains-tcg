@@ -55,63 +55,56 @@
         (when produces
           [:p "Produces: " (om/build manas produces)])]))))
 
-(defn card [{:keys [selected? name type] :as data} owner {:keys [class action-label]}]
+(defn hidden [^boolean bool]
+  (if bool
+    #js {:display "none"}
+    #js {:display "block"}))
+
+(defn card [{:keys [hidden? name type id] :as data} owner {:keys [class action-label] :as opts}]
   (reify
     om/IDisplayName (display-name [_] "Card")
     om/IRenderState
-    (render-state [_ {:keys [control-chan list-chan]}]
+    (render-state [_ {:keys [control-chan hovered? copy?]}]
       (html
        [:div.card
-        (cond-> {:onClick #(put! list-chan [:select-card data])}
-                selected? (update-in [:class] #(str % " selected"))
-                class     (update-in [:class] #(str % " " class)))
-        [:h3 name]
-        (om/build (if (= :land type) land spell) data)
-        (when selected?
-          [:button.pure-button {:onClick #(put! control-chan [:action-card data])}
-           (or action-label "Use")])]))))
+        (cond-> {:class class
+                 :style (hidden hidden?)
+                 :onMouseOut #(om/set-state! owner :hovered? false)
+                 :onMouseOver #(om/set-state! owner :hovered? true)}
+                hovered? (assoc :onClick #(put! control-chan [:action-card id])))
+        (when-not copy?
+          (list
+           [:h3 name]
+           (om/build (if (= :land type) land spell) data)
+           (when hovered?
+             [:button.pure-button
+              [:small "Click to " action-label]])))]))))
 
-(defn deck-card [{card* :card amount :amount :as data} owner opts]
+(defn deck-card [{card* :card amount :amount hidden? :hidden? :as data} owner opts]
   (reify
     om/IDisplayName (display-name [_] "DeckCard")
     om/IRenderState
-    (render-state [_ {:keys [control-chan list-chan]}]
+    (render-state [_ {:keys [control-chan]}]
       (html
        [:div.deck-card
+        {:style (hidden hidden?)}
         (for [i (range amount)]
-          (om/build card card* {:init-state {:control-chan control-chan
-                                             :list-chan list-chan}
-                                :opts (assoc opts :class (str "card" i))}))]))))
+          (om/build card
+                    card*
+                    {:init-state {:control-chan control-chan
+                                  :copy? (not (zero? i))}
+                     :opts (assoc opts :class (str "card" i))}))]))))
 
-(defn card-list [data owner {:keys [item-component display-name]} opts]
+(defn card-list [data owner {:keys [item-component display-name] :as opts}]
   (reify
     om/IDisplayName (display-name [_] (str display-name "CardList"))
-    om/IInitState   (init-state   [_] {:list-chan (chan)
-                                       :selected-card nil})
-    om/IWillMount
-    (will-mount [_]
-      (let [list-chan (om/get-state owner :list-chan)]
-        (go (while true
-              (when-let [[op value] (<! list-chan)]
-                (prn value (om/get-state owner :selected-card)
-                     (= value (om/get-state owner :selected-card)))
-                (condp = op
-                  :select-card
-                  (om/set-state! owner :selected-card
-                                 (if (= value (om/get-state owner :selected-card))
-                                   nil value))))))))
     om/IRenderState
-    (render-state [_ {:keys [control-chan list-chan selected-card]}]
+    (render-state [_ {:keys [control-chan]}]
       (html
        [:div.card-list
         (if (seq data)
           (om/build-all item-component data
-                        {:fn (fn [card]
-                               (cond-> card
-                                       (= card selected-card) (assoc :selected? true)))
-                         :init-state {:control-chan control-chan
-                                      :list-chan list-chan
-                                      :selected selected-card}
-                         :opts opts})
+                        {:init-state {:control-chan control-chan}
+                         :opts (select-keys opts [:action-label])})
           "No cards.")]))))
 

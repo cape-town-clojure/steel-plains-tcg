@@ -123,6 +123,7 @@
        seq))
 
 (defn maybe-add-card-to-deck [deck card]
+  (prn deck card)
   (let [deck-type (deck-type-for-card card)]
     (if (card-in-deck? (get deck deck-type) card)
       (walk/postwalk
@@ -138,16 +139,25 @@
 
 (defn remove-card-from-deck [deck card]
   (let [deck-type (deck-type-for-card card)
-        deck (get deck deck-type)]
-    (walk/postwalk
-     (fn [elem]
-       (if (and (map? elem)
-                (= (:card elem) card))
-         (if (< 1 (:amount elem))
-           (update-in elem [:amount] dec)
-           nil)
-         elem))
-     deck)))
+        sub-deck (get deck deck-type)]
+    (if-let [deck-card (->> sub-deck
+                            (filter #(= (:id card) (-> % :card :id)))
+                            first)]
+      (if (< 1 (:amount deck-card))
+        (walk/postwalk
+         (fn [elem]
+           (if (and (map? elem)
+                    (= (:card elem) card))
+             (update-in elem [:amount] dec)
+             elem))
+         deck)
+        (walk/postwalk
+         (fn [elem]
+           (if (= sub-deck elem)
+             (->> sub-deck (remove #(= % deck-card)) vec)
+             elem))
+         deck))
+      deck)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Helpers
@@ -184,19 +194,15 @@
       (conj :all)
       sort))
 
-(defn filter-by-type
-  [type coll]
-  (if (= :all type)
-    coll
-    (filter #(= type (:type %)) coll)))
+(defn matches-type?
+  [type card]
+  (or (= :all type)
+      (= (:type card) type)))
 
-(defn filter-by-colour
-  [colour coll]
-  (if (= :all colour)
-    coll
-    (->> coll
-         (filter (fn [{:keys [cost produces]}]
-                   (get (->> (concat cost produces)
-                             (map #(or (:colour %) :none))
-                             set)
-                        colour))))))
+(defn matches-colour?
+  [colour {:keys [cost produces]}]
+  (or (= :all colour)
+      (get (->> (concat cost produces)
+                (map #(or (:colour %) :none))
+                set)
+           colour)))

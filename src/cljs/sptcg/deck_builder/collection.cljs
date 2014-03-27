@@ -8,12 +8,10 @@
             [sptcg.deck-builder.card :as card]
             [sptcg.model :as model]))
 
-(defn collection [data owner]
+(defn collection [{:keys [selected-card-type selected-colour cards] :as data} owner]
   (reify
     om/IDisplayName (display-name [_] "Collection")
-    om/IInitState   (init-state   [_] {:collection-chan (chan)
-                                       :selected-card-type :all
-                                       :selected-colour :all})
+    om/IInitState   (init-state   [_] {:collection-chan (chan)})
     om/IWillMount
     (will-mount [_]
       (let [control-chan (om/get-state owner :control-chan)
@@ -21,32 +19,30 @@
         (go (while true
               (when-let [[op value] (<! collection-chan)]
                 (condp = op
-                  :select-card-type (om/set-state! owner :selected-card-type value)
-                  :select-colour    (om/set-state! owner :selected-colour value)
+                  :select-card-type (om/update! data :selected-card-type value)
+                  :select-colour    (om/update! data :selected-colour value)
                   :action-card      (put! control-chan [:use-collection-card value])))))))
     om/IRenderState
-    (render-state [_ {:keys [collection-chan
-                             selected-card-type
-                             selected-colour]}]
+    (render-state [_ {:keys [collection-chan]}]
       (html
        [:div.collection
         [:h2 "Collection"]
         (om/build enum-toggle-buttons/enum-toggle-buttons
-                  {:enums card-schema/card-types
-                   :selected selected-card-type}
+                  card-schema/card-types
                   {:init-state {:select-chan collection-chan}
+                   :state {:selected selected-card-type}
                    :opts {:op :select-card-type}})
         (om/build enum-toggle-buttons/enum-toggle-buttons
-                  {:enums card-schema/colours
-                   :selected selected-colour}
+                  card-schema/colours
                   {:init-state {:select-chan collection-chan}
+                   :state {:selected selected-colour}
                    :opts {:op :select-colour}})
         [:hr]
-        (om/build card/card-list
-                  (->> data
-                       (card-schema/filter-by-type selected-card-type)
-                       (card-schema/filter-by-colour selected-colour))
+        (om/build card/card-list (->> cards
+                                      (filter (partial card-schema/matches-type? selected-card-type))
+                                      (filter (partial card-schema/matches-colour? selected-colour)))
                   {:init-state {:control-chan collection-chan}
                    :opts {:item-component card/card
-                          :display-name "Collection"}})]))))
+                          :display-name "Collection"
+                          :action-label "add to deck"}})]))))
 

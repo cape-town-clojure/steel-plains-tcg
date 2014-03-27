@@ -18,14 +18,14 @@
                  :onClick #(put! select-chan [op enum])}
         [:small (card-schema/labelise-enum enum)]]))))
 
-(defn enum-toggle-buttons [{:keys [enums selected]} owner {:keys [op]}]
+(defn enum-toggle-buttons [data owner {:keys [op]}]
   (reify
     om/IDisplayName (display-name [_] "EnumToggleButtons")
     om/IRenderState
-    (render-state [_ {:keys [select-chan]}]
+    (render-state [_ {:keys [select-chan selected]}]
       (html
        [:div.emum-toggles
-        (om/build-all enum-toggle-button (card-schema/sorted-enum-list enums)
+        (om/build-all enum-toggle-button (card-schema/sorted-enum-list data)
                       {:fn (fn [enum]
                              (cond-> {:enum enum}
                                      (= enum selected) (assoc :selected? true)))
