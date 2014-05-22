@@ -32,11 +32,24 @@
               (when-let [[op value] (<! control-chan)]
                 (condp = op
                   :use-collection-card
-                  (om/transact! data :deck-builder
-                                #(update-in % [:current-deck]
-                                            card-schema/maybe-add-card-to-deck
-                                            (model/card-by-id (-> % :cardbase :cards)
-                                                              value)))
+                  (do
+                    (let [data* @data
+                          card (model/card-by-id (-> data* :deck-builder :cardbase :cards)
+                                                 value)
+                          deck-type (card-schema/deck-type-for-card card)]
+                      (when (card-schema/can-add-card-to-deck?
+                             (-> data* :deck-builder :current-deck)
+                             (model/card-by-id (-> data* :cardbase :cards)
+                                               value))
+                        (om/transact! data
+                                      [:deck-builder :current-deck deck-type]
+                                      #(card-schema/add-card-to-deck
+                                        % deck-type
+                                        (model/card-by-id (-> data*
+                                                              :deck-builder
+                                                              :cardbase
+                                                              :cards)
+                                                          value))))))
                   :remove-deck-card
                   (om/transact! data :deck-builder
                                 #(update-in % [:current-deck]
@@ -86,9 +99,17 @@
   []
   (let [comms (:comms @state)
         target (.getElementById js/document "deck-builder")]
-    (om/root deck-builder state {:target target
-                                 ;:instrument instrument
-                                 })
+    (om/root deck-builder state
+             {:target target
+              ;;:instrument instrument
+              :tx-listen
+              (fn [tx-data root-cursor]
+                (prn "-----")
+                (prn (keys tx-data))
+                (prn (:path tx-data))
+                (prn "<<< VALUE" (:old-value tx-data))
+                (prn ">>> VALUE" (:new-value tx-data)))
+              })
     (go (while true
           (alt!
             (:controls comms)

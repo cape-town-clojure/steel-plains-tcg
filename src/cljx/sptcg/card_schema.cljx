@@ -120,25 +120,29 @@
   (if (= :land (:type card))
     :land :spell))
 
-(defn card-in-deck? [deck card]
+(defn card-in-deck [deck card]
   (->> deck
        (filter #(= (:card %) card))
-       seq))
+       first))
 
-(defn maybe-add-card-to-deck [deck card]
-  (prn deck card)
+(defn can-add-card-to-deck? [deck card]
   (let [deck-type (deck-type-for-card card)]
-    (if (card-in-deck? (get deck deck-type) card)
-      (walk/postwalk
-       (fn [elem]
-         (if (and (map? elem)
-                  (= (:card elem) card)
-                  (:amount elem)
-                  (> (maximum-copies deck-type) (:amount elem)))
-           (update-in elem [:amount] inc)
-           elem))
-       deck)
-      (update-in deck [deck-type] conj {:card card :amount 1}))))
+    (if-let [deck-card (card-in-deck deck card)]
+      (> (maximum-copies deck-type) (:amount deck-card))
+      true)))
+
+(defn can-remove-card-from-deck? [deck card]
+  (->> (deck-type-for-card card)
+       (get deck)
+       (filter #(= (:id card) (-> % :card :id)))
+       first
+       boolean))
+
+(defn add-card-to-deck [deck deck-type card]
+  (if-let [deck-card (card-in-deck deck card)]
+    (conj (remove (partial = deck-card) deck)
+          {:card card :amount (-> deck-card :amount inc)})
+    (conj deck {:card card :amount 1})))
 
 (defn remove-card-from-deck [deck card]
   (let [deck-type (deck-type-for-card card)
